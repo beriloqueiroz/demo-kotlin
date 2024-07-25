@@ -1,4 +1,4 @@
-package com.example.demo_kotlin;
+package com.beriloqueiroz.demo_kotlin.entity;
 
 import jakarta.persistence.*;
 
@@ -25,6 +25,7 @@ class PackageEvent(
     @Column(nullable = false)
     val destination: String,
 
-    @Column(nullable = false)
-    val packageId: Long
+    @ManyToOne
+    @JoinColumn(name="package_id", nullable = false)
+    val packageEntity: PackageEntity
 )

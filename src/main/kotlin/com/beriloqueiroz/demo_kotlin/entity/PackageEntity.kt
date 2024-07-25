@@ -1,11 +1,10 @@
-package com.example.demo_kotlin;
+package com.beriloqueiroz.demo_kotlin.entity;
 
 import jakarta.persistence.*;
 
 @Entity
 @Table(name = "packages")
-class PackageEntity(
-
+class PackageEntity (
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     val packageId: Long?,
@@ -19,8 +18,6 @@ class PackageEntity(
     @Column(nullable = false)
     val lastStatus: String,
 
-    @OneToMany
-    @JoinColumn(name = "package_id", nullable = false)
+    @OneToMany(mappedBy="packageEntity")
     val trackingEvents: MutableList<PackageEvent>
-
 )

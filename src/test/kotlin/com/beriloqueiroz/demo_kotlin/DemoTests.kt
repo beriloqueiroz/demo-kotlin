@@ -1,8 +1,8 @@
 package com.beriloqueiroz.demo_kotlin
 
-import com.example.demo_kotlin.PackageEntity
-import com.example.demo_kotlin.PackageEvent
-import com.example.demo_kotlin.PackageRepository
+import com.beriloqueiroz.demo_kotlin.entity.PackageEntity
+import com.beriloqueiroz.demo_kotlin.entity.PackageEvent
+import com.beriloqueiroz.demo_kotlin.repository.PackageRepository
 import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Test

@@ -6,26 +6,50 @@ import com.example.demo_kotlin.PackageRepository
 import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.TestInstance
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest
 import org.assertj.core.api.Assertions.assertThat
+import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest
+import org.springframework.boot.testcontainers.service.connection.ServiceConnection
+import org.springframework.test.context.DynamicPropertyRegistry
+import org.springframework.test.context.DynamicPropertySource
+import org.testcontainers.containers.MySQLContainer
+import org.testcontainers.junit.jupiter.Container
+import org.testcontainers.junit.jupiter.Testcontainers
 
 @DataJpaTest
-@TestInstance(TestInstance.Lifecycle.PER_CLASS)
-class DemoTest(@Autowired private val packageRepository: PackageRepository) {
-    @BeforeAll
-    fun startDb() {
-        println("ClassRule Before")
-        TestMySqlContainer.start()
+@Testcontainers
+class DemoTests {
 
+    companion object {
+        @Container
+        @ServiceConnection
+        @JvmStatic
+        val db = MySQLContainer("mysql")
+
+
+        @BeforeAll
+        @JvmStatic
+        fun startDBContainer() {
+            db.start()
+        }
+
+        @AfterAll
+        @JvmStatic
+        fun stopDBContainer() {
+            db.stop()
+        }
+
+        @DynamicPropertySource
+        @JvmStatic
+        fun registerDBContainer(registry: DynamicPropertyRegistry) {
+            registry.add("spring.datasource.url", db::getJdbcUrl)
+            registry.add("spring.datasource.username", db::getUsername)
+            registry.add("spring.datasource.password", db::getPassword)
+        }
     }
 
-    @AfterAll
-    fun stopDb() {
-        println("ClassRule After")
-
-    }
+    @Autowired
+    private lateinit var packageRepository: PackageRepository;
 
     @Test
     fun `save data works`() {

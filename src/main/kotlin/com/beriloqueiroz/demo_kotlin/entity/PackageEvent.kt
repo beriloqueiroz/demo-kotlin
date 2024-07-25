@@ -28,4 +28,8 @@ class PackageEvent(
     @ManyToOne
     @JoinColumn(name="package_id", nullable = false)
     val packageEntity: PackageEntity
-)
+) {
+    override fun toString(): String {
+        return "PackageEvent(eventId=$eventId, trackerType='$trackerType', trackingCode='$trackingCode', description='$description', origin='$origin', destination='$destination'"
+    }
+}

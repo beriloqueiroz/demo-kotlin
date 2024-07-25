@@ -8,21 +8,19 @@ import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.assertj.core.api.Assertions.assertThat
-import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest
-import org.springframework.boot.testcontainers.service.connection.ServiceConnection
+import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.test.context.DynamicPropertyRegistry
 import org.springframework.test.context.DynamicPropertySource
 import org.testcontainers.containers.MySQLContainer
 import org.testcontainers.junit.jupiter.Container
 import org.testcontainers.junit.jupiter.Testcontainers
 
-@DataJpaTest
+@SpringBootTest
 @Testcontainers
 class DemoTests {
-
+    var pkgId:Long = 0;
     companion object {
         @Container
-        @ServiceConnection
         @JvmStatic
         val db = MySQLContainer("mysql")
 
@@ -53,31 +51,42 @@ class DemoTests {
 
     @Test
     fun `save data works`() {
-        val pkg1 = packageRepository.save(createPackageEntity(1L))
-        val pkg2 = packageRepository.save(createPackageEntity(2L))
+        var pkg1 = packageRepository.save(createPackageEntity("1"))
+        this.pkgId++
+        pkg1.trackingEvents.add(createPackageEvent("1", pkg1))
+        pkg1.trackingEvents.add(createPackageEvent("2", pkg1))
+        pkg1 = packageRepository.save(pkg1)
 
-        assertThat(pkg1).matches { it.packageId!!.equals(0L) && it.createdAt == "2000-01-01" }
-        assertThat(pkg2).matches { it.packageId!!.equals(1L) && it.createdAt == "2000-01-02" }
+        var dbPkg = packageRepository.findById(pkg1.packageId!!)
+        assertThat(dbPkg.get().toString()).isEqualTo(pkg1.toString());
 
-        assertThat(packageRepository.findAll()).containsExactly(pkg1, pkg2)
+        var pkg2 = packageRepository.save(createPackageEntity("2"))
+        this.pkgId++
+        pkg2.trackingEvents.add(createPackageEvent("3", pkg2))
+        pkg2.trackingEvents.add(createPackageEvent("4", pkg2))
+        pkg2.trackingEvents.add(createPackageEvent("5", pkg2))
+        pkg2 = packageRepository.save(pkg2)
+
+        dbPkg = packageRepository.findById(pkg2.packageId!!)
+        assertThat(dbPkg.get().toString()).isEqualTo(pkg2.toString());
     }
 
     @Test
     fun `findById works`() {
-        val pkg1 = packageRepository.save(createPackageEntity(3L))
-        assertThat(pkg1).matches { it.packageId!!.equals(3L) && it.createdAt == "2000-01-03" }
+        val pkg1 = packageRepository.save(createPackageEntity("3"))
+        this.pkgId++
+        assertThat(pkg1).matches { it.packageId!!.equals(this.pkgId) && it.createdAt == "2000-01-03" }
         val dbPkg = packageRepository.findById(pkg1.packageId!!)
         assertThat(dbPkg)
             .isNotNull
-            .matches { it.get().packageId!!.equals(1L) && it.get().createdAt == "2000-01-02" }
+            .matches { it.get().packageId!!.equals(this.pkgId) && it.get().createdAt == "2000-01-03" }
     }
 
-    fun createPackageEntity(id:Long): PackageEntity {
-        val events = mutableListOf(createPackageEvent(1L, id), createPackageEvent(2L, id));
-        return PackageEntity(id, "2000-01-0"+id, "2000-01-0"+id, "CONFIRMED", events);
+    fun createPackageEntity(ref:String): PackageEntity {
+        return PackageEntity(null, "2000-01-0"+ref, "2000-01-0"+ref, "CONFIRMED", arrayListOf());
     }
 
-    fun createPackageEvent(id:Long, packageId:Long): PackageEvent {
-        return PackageEvent(id, "Type", "AAA"+id, "description"+id, "Aqui", "Aculá", packageId)
+    fun createPackageEvent(ref:String, packageEntity: PackageEntity): PackageEvent {
+        return PackageEvent(null, "Type", "AAA"+ref, "description"+ref, "Aqui", "Aculá", packageEntity)
     }
 }

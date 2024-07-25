@@ -8,6 +8,6 @@ class PackageController(private val service: PackageService) {
 
     @GetMapping
     fun get():String {
-        return service.find();
+        return service.findFake();
     }
 }

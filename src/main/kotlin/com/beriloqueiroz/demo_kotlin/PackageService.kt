@@ -5,7 +5,7 @@ import org.springframework.stereotype.Service
 
 @Service
 class PackageService (private val packageRepository: PackageRepository) {
-    fun find(): String{
+    fun findFake(): String{
         return "Olá Mundo";
     }
 }

@@ -18,7 +18,7 @@ import org.testcontainers.junit.jupiter.Testcontainers
 @SpringBootTest
 @Testcontainers
 class DemoTests {
-    var pkgId:Long = 0;
+    var pkgId:Int = 0;
     companion object {
         @Container
         @JvmStatic
@@ -69,17 +69,19 @@ class DemoTests {
 
         dbPkg = packageRepository.findById(pkg2.packageId!!)
         assertThat(dbPkg.get().toString()).isEqualTo(pkg2.toString());
+
+        val pkgs = packageRepository.findAll();
+        assertThat(pkgs.size).isEqualTo(this.pkgId+1);
+        assertThat(pkgs.find { pk-> pk.packageId!!.equals(pkg1.packageId) }!!.trackingEvents.size).isEqualTo(2);
+        assertThat(pkgs.find { pk-> pk.packageId!!.equals(pkg2.packageId) }!!.trackingEvents.size).isEqualTo(3);
     }
 
     @Test
     fun `findById works`() {
         val pkg1 = packageRepository.save(createPackageEntity("3"))
         this.pkgId++
-        assertThat(pkg1).matches { it.packageId!!.equals(this.pkgId) && it.createdAt == "2000-01-03" }
         val dbPkg = packageRepository.findById(pkg1.packageId!!)
-        assertThat(dbPkg)
-            .isNotNull
-            .matches { it.get().packageId!!.equals(this.pkgId) && it.get().createdAt == "2000-01-03" }
+        assertThat(dbPkg.get().toString()).isEqualTo(pkg1.toString())
     }
 
     fun createPackageEntity(ref:String): PackageEntity {
